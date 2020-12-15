@@ -4,44 +4,39 @@
  */
 package com.vmware.vipclient.i18n.util;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class LocaleUtility {
 
     private static Locale defaultLocale;
     private static Locale sourceLocale = Locale.ENGLISH;
-    
+
     // A locale fallback priority queue. For now, it only contains the default locale and the source messages (from "messages_source.json").
     private static List<Locale> fallbackLocales = new LinkedList<Locale>(Arrays.asList(getDefaultLocale(), Locale.forLanguageTag(ConstantsKeys.SOURCE)));
-    private static List<Locale> l2FallbackLocales = new LinkedList<Locale>(Arrays.asList(getDefaultLocale(), Locale.ENGLISH));
+    ;
 
     // Use ThreadLocal to combine the locale with local thread so that the
     // locale can be used by any code places.
-    private static InheritableThreadLocal<Map<String, Locale>> threadLocal    = new InheritableThreadLocal<Map<String, Locale>>() {
-                                                                                  @Override
-                                                                                  protected Map<String, Locale> initialValue() {
-                                                                                      return new HashMap<>();
-                                                                                  }
+    private static InheritableThreadLocal<Map<String, Locale>> threadLocal = new InheritableThreadLocal<Map<String, Locale>>() {
+        @Override
+        protected Map<String, Locale> initialValue() {
+            return new HashMap<>();
+        }
 
-                                                                                  @Override
-                                                                                  protected Map<String, Locale> childValue(
-                                                                                          Map<String, Locale> parentValue) {
-                                                                                      return parentValue.entrySet()
-                                                                                              .stream().collect(
-                                                                                                      Collectors.toMap(
-                                                                                                              Map.Entry::getKey,
-                                                                                                              e -> (new Locale.Builder())
-                                                                                                                      .setLocale(
-                                                                                                                              e.getValue())
-                                                                                                                      .build()));
-                                                                                  }
-                                                                              };
+        @Override
+        protected Map<String, Locale> childValue(
+                Map<String, Locale> parentValue) {
+            return parentValue.entrySet()
+                    .stream().collect(
+                            Collectors.toMap(
+                                    Map.Entry::getKey,
+                                    e -> (new Locale.Builder())
+                                            .setLocale(
+                                                    e.getValue())
+                                            .build()));
+        }
+    };
 
     /**
      * Set the locale to ThreadLocal
@@ -110,9 +105,9 @@ public class LocaleUtility {
      * Check if a language tag matches the default locale that is from the config file
      */
     public static boolean isDefaultLocale(String languageTag) {
-    	languageTag = languageTag.replaceAll("_", "-");
+        languageTag = languageTag.replaceAll("_", "-");
         Locale match = Locale.lookup(Arrays.asList(new Locale.LanguageRange(languageTag)),
-        		Arrays.asList(getDefaultLocale()));
+                Arrays.asList(getDefaultLocale()));
         return match != null;
     }
 
@@ -129,11 +124,11 @@ public class LocaleUtility {
     public static Locale fmtToMappedLocale(Locale zhLocale) {
         if (zhLocale.toLanguageTag().equalsIgnoreCase("zh-CN")
                 || zhLocale.toLanguageTag().equalsIgnoreCase(
-                        "zh-Hans-CN")) {
+                "zh-Hans-CN")) {
             return Locale.forLanguageTag("zh-Hans");
         } else if (zhLocale.toLanguageTag().equalsIgnoreCase("zh-TW")
                 || zhLocale.toLanguageTag().equalsIgnoreCase(
-                        "zh-Hant-TW")) {
+                "zh-Hant-TW")) {
             return Locale.forLanguageTag("zh-HANT");
         }
         return zhLocale;
@@ -149,7 +144,7 @@ public class LocaleUtility {
      * pick up the matched locale from a locale list
      */
     public static Locale pickupLocaleFromList(List<Locale> locales,
-            Locale preferredLocale) {
+                                              Locale preferredLocale) {
         Locale langLocale = null;
         preferredLocale = fmtToMappedLocale(preferredLocale);
 
@@ -167,7 +162,7 @@ public class LocaleUtility {
                 if (((preferredScript.equalsIgnoreCase("")) && (configuredScript
                         .equalsIgnoreCase("")))
                         || ((!preferredScript.equalsIgnoreCase("")) && (preferredScript
-                                .equalsIgnoreCase(configuredScript)))) {
+                        .equalsIgnoreCase(configuredScript)))) {
                     return configuredLocale;
                 }
                 langLocale = langLocale == null ? configuredLocale : langLocale;
@@ -201,15 +196,15 @@ public class LocaleUtility {
             String[] os = localeStr.split("_");
             for (int i = 0; i < os.length; i++) {
                 switch (i) {
-                case 0:
-                    language = os[0];
-                    continue;
-                case 1:
-                    country = "".equalsIgnoreCase(os[1]) ? "" : "-" + os[1];
-                    continue;
-                case 2:
-                    script = "".equalsIgnoreCase(os[2]) ? "" : "-" + os[2].replace("#", "");
-                    continue;
+                    case 0:
+                        language = os[0];
+                        continue;
+                    case 1:
+                        country = "".equalsIgnoreCase(os[1]) ? "" : "-" + os[1];
+                        continue;
+                    case 2:
+                        script = "".equalsIgnoreCase(os[2]) ? "" : "-" + os[2].replace("#", "");
+                        continue;
                 }
 
             }
@@ -219,7 +214,7 @@ public class LocaleUtility {
 
     /**
      * validate that an argument is a well-formed BCP 47 tag
-     * 
+     *
      * @param languageTag
      * @return true if the format is fine
      */
@@ -230,35 +225,47 @@ public class LocaleUtility {
         return languageTag.contains("-");
     }
 
-	public static Locale getDefaultLocale() {
-		return defaultLocale == null ? getSourceLocale() : defaultLocale;
-	}
-
-	public static void setDefaultLocale(Locale defaultLocale) {
-		LocaleUtility.defaultLocale = defaultLocale;
-	}
-
-	public static Locale getSourceLocale() {
-		return sourceLocale; 
-	}
-
-	public static void setSourceLocale(Locale sourceLocale) {
-		LocaleUtility.sourceLocale = sourceLocale;
-	}
-
-	public static List<Locale> getFallbackLocales() {
-		return fallbackLocales;
-	}
-
-	public static void setFallbackLocales(List<Locale> fallbackLocales) {
-		LocaleUtility.fallbackLocales = fallbackLocales;
-	}
-
-    public static List<Locale> getL2FallbackLocales() {
-        return l2FallbackLocales;
+    public static Locale getDefaultLocale() {
+        return defaultLocale == null ? getSourceLocale() : defaultLocale;
     }
 
-    public static void setL2FallbackLocales(List<Locale> l2fallbackLocales) {
-        LocaleUtility.l2FallbackLocales = l2fallbackLocales;
+    public static void setDefaultLocale(Locale defaultLocale) {
+        LocaleUtility.defaultLocale = defaultLocale;
+    }
+
+    public static Locale getSourceLocale() {
+        return sourceLocale;
+    }
+
+    public static void setSourceLocale(Locale sourceLocale) {
+        LocaleUtility.sourceLocale = sourceLocale;
+    }
+
+    public static List<Locale> getFallbackLocales() {
+        return fallbackLocales;
+    }
+
+    public static void setFallbackLocales(List<Locale> fallbackLocales) {
+        LocaleUtility.fallbackLocales = fallbackLocales;
+    }
+
+    public static Iterator getL2FallbackLocalesIterator() {
+        return new L2Iterator();
+    }
+
+    public static class L2Iterator implements Iterator {
+        Iterator<Locale> iterator = getFallbackLocales().iterator();
+
+        public boolean hasNext() {
+            return iterator.hasNext();
+        }
+
+        public Locale next() {
+            Locale locale = iterator.next();
+            if (locale.toLanguageTag().equals(ConstantsKeys.SOURCE))
+                return getDefaultLocale();
+
+            return locale;
+        }
     }
 }
